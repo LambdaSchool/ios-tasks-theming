@@ -13,6 +13,7 @@ class TaskDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        setTheme()
         updateViews()
     }
 
@@ -45,6 +46,12 @@ class TaskDetailViewController: UIViewController {
         navigationController?.popViewController(animated: true)
     }
     
+    @IBAction func updatePriority(_ sender: Any) {
+        let priorityIndex = priorityControl.selectedSegmentIndex
+        let priority = TaskPriority.allPriorities[priorityIndex]
+        styleAccents(for: priority)
+    }
+    
     private func updateViews() {
         guard isViewLoaded else { return }
         
@@ -56,8 +63,40 @@ class TaskDetailViewController: UIViewController {
         } else {
             priority = .normal
         }
+        
+        styleAccents(for: priority)
         priorityControl.selectedSegmentIndex = TaskPriority.allPriorities.index(of: priority)!
         notesTextView.text = task?.notes
+    }
+    
+    private func setTheme() {
+        view.backgroundColor = Appearance.darkBackground
+        notesTextView.keyboardAppearance = .dark
+        notesTextView.layer.cornerRadius = 6
+        notesTextView.font = Appearance.applicationFont(with: .caption1, at: 14)
+        notesTextView.adjustsFontForContentSizeCategory = true
+        nameTextField.font = Appearance.applicationFont(with: .body, at: 16)
+        nameTextField.adjustsFontForContentSizeCategory = true
+
+    }
+    
+    private func styleAccents(for priority: TaskPriority) {
+        var color: UIColor
+        
+        switch priority {
+        case .critical: color = Appearance.criticalPriorityColor
+        case .high: color = Appearance.highPriorityColor
+        case .normal: color = Appearance.normalPriorityColor
+        case .low: color = Appearance.lowPriorityColor
+        }
+        
+        color = Appearance.colorForPosition(color: color, position: 6)
+        
+        nameTextField.tintColor = color
+        priorityControl.tintColor = color
+        notesTextView.tintColor = color
+        navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: color, .font: Appearance.applicationFont(with: .title1, at: 30)]
+        navigationController?.navigationBar.tintColor = color
     }
     
     // MARK: Properties

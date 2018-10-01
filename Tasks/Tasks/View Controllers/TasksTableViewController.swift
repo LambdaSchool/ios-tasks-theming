@@ -11,6 +11,14 @@ import CoreData
 
 class TasksTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.white, .font: Appearance.applicationFont(with: .title1, at: 30)]
+        navigationController?.navigationBar.tintColor = .white
+        navigationController?.navigationBar.isTranslucent = false
+    }
+    
     @IBAction func refresh(_ sender: Any) {
         taskController.fetchTasksFromServer { _ in
             DispatchQueue.main.async {
@@ -34,14 +42,27 @@ class TasksTableViewController: UITableViewController, NSFetchedResultsControlle
         
         let task = fetchedResultsController.object(at: indexPath)
         cell.textLabel?.text = task.name
+        style(cell: cell)
+        switch task.priority {
+        case TaskPriority.critical.rawValue:
+            cell.backgroundColor = Appearance.colorForPosition(color: Appearance.criticalPriorityColor, position: indexPath.row)
+        case TaskPriority.high.rawValue:
+            cell.backgroundColor = Appearance.colorForPosition(color: Appearance.highPriorityColor, position: indexPath.row)
+        case TaskPriority.normal.rawValue:
+            cell.backgroundColor = Appearance.colorForPosition(color: Appearance.normalPriorityColor, position: indexPath.row)
+        case TaskPriority.low.rawValue:
+            cell.backgroundColor = Appearance.colorForPosition(color: Appearance.lowPriorityColor, position: indexPath.row)
+        default:
+            cell.backgroundColor = Appearance.darkBackground
+        }
         
         return cell
     }
     
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        guard let sectionInfo = fetchedResultsController.sections?[section] else { return nil }
-        return sectionInfo.name.capitalized
-    }
+//    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+//        guard let sectionInfo = fetchedResultsController.sections?[section] else { return nil }
+//        return sectionInfo.name.capitalized
+//    }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
@@ -69,8 +90,6 @@ class TasksTableViewController: UITableViewController, NSFetchedResultsControlle
     }
     
     // MARK: - NSFetchedResultsControllerDelegate
-    
-    
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.beginUpdates()
     }
@@ -116,9 +135,7 @@ class TasksTableViewController: UITableViewController, NSFetchedResultsControlle
         }
     }
     
-    // MARK: - Navigation
-    
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    // MARK: - Navigation]
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ShowTaskDetail" {
             let detailVC = segue.destination as! TaskDetailViewController
@@ -132,6 +149,12 @@ class TasksTableViewController: UITableViewController, NSFetchedResultsControlle
             let detailVC = segue.destination as! TaskDetailViewController
             detailVC.taskController = taskController
         }
+    }
+    
+    // MARK: Utility Methods
+    private func style(cell: UITableViewCell) {
+        cell.textLabel?.font = Appearance.applicationFont(with: .body, at: 16)
+        cell.textLabel?.textColor = .white
     }
     
     // MARK: Properties
